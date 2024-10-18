@@ -15,7 +15,102 @@
   </div>
   <script src="../../common/js/jquery.js"></script>
   <script>
-    // 回答はここに書いてね
+    // 「ポケモンを探す」後の画面表示
+    let enCountHtml =
+    `
+      <p class="name"></p>
+      <div>
+        <img class="img" src="" alt="">
+      </div>
+      <div>
+        <button class="btn" id="catch">捕まえる</button>
+        <button class="btn" data-js="reset">逃げる</button>
+      </div>
+    `
+
+    // 「捕まえる」成功時の画面表示
+    let doneHtml =
+    `
+      <p class="name">ゲットしました</p>
+      <div>
+        <img class="img" src="" alt="">
+      </div>
+      <button class="btn" data-js="reset">戻る</button>
+    `
+
+  // 「捕まえる」失敗時の画面表示
+  let failHtml =
+    `
+      <p class="text">逃げられてしまった...</p>
+      <button class="btn mt" data-js="reset">戻る</button>
+    `
+  let firstHtml =
+  `
+    <button type="button" class="btn search-btn" id="pokemon_search">ポケモンを探す</button>
+  `
+  let min = 1 ;
+  let max = 151 ;
+  let id = Math.floor( Math.random() * (max + 1 - min) ) + min ;
+  
+  $('#pokemon_search').click(function(id){
+    $.ajax({
+    url: 'https://pokeapi.co/api/v2/pokemon/{{id}}',
+    method: 'GET'
+    }).done(function(pokemonData) {
+      remove();
+      $('#wrapper').append(enCountHtml);
+      $.ajax({
+              url:pokemonData.species.url,
+              dataType: 'json',
+              success: function(nameData){
+                const pokemonName = nameData.names.find(name => name.language.name === 'ja').name
+                $('.name').text(pokemonName);
+              }
+        })
+      $('.img').attr('src',pokemonData.sprites.front_default);
+    }).fail(function(err) {
+      console.error('エラーが発生しました');
+    });
+  })
+
+  $('#wrapper').on('click', '#catch', function() {
+    const rlt = Math.ceil(Math.random()*2);
+    if(rlt == 1){
+      done();
+    }else{
+      fail();
+    }
+  });
+  
+  $('#wrapper').on('click', '[data-js]', function() {
+    remove();
+    $('#wrapper').append(firstHtml);
+  })
+
+  function remove() {
+    $('#wrapper').children().remove();
+  }
+
+  function done() {
+    remove();
+    $('#wrapper').append(doneHtml);
+    $.ajax({
+    url: 'https://pokeapi.co/api/v2/pokemon/1',
+    method: 'GET'
+    }).done(function(pokemonData) {
+      console.log(pokemonData);
+      $('.img').attr('src',pokemonData.sprites.front_default);
+    }).fail(function(err) {
+      console.error('エラーが発生しました');
+    });
+    
+  }
+
+  function fail() {
+    remove();
+    $('#wrapper').append(failHtml);
+  }
+
   </script>
 </body>
 </html>
